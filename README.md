@@ -108,14 +108,18 @@ pursr diff https://example.com ./captures/reference.png ./captures/current-diff.
 
 ### CI sweep
 
-Keep a sweep plan in your repository and run it in CI. A sweep writes
+Install `pursr` and `playwright-core` as development dependencies, then keep a
+sweep plan in your repository and run it in CI. A sweep writes
 `sweep.json`, `sweep.junit.xml`, `sweep.github.json`, and `sweep.md` next to its
 captures. The extra Node check makes the job fail when any step fails, while
 the artifact upload preserves the screenshots and reports for review:
 
 ```yaml
 - run: npm ci
-- run: npx playwright install --with-deps chromium
+- name: Install Chromium
+  run: |
+    npx playwright-core install --with-deps chromium
+    node -e "const fs=require('node:fs'); const {chromium}=require('playwright-core'); fs.appendFileSync(process.env.GITHUB_ENV, 'PURSR_BROWSER_PATH='+chromium.executablePath()+'\n');"
 - run: npx pursr sweep ./plans/visual-regression.json --out-dir ./artifacts/pursr
 - run: node -e "const s=require('./artifacts/pursr/sweep.json'); if (s.steps.some(step => !step.ok)) process.exit(1)"
 - uses: actions/upload-artifact@v4

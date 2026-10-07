@@ -15,6 +15,10 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
+      - name: Install Chromium
+        run: |
+          npx playwright-core install --with-deps chromium
+          node -e "const fs=require('node:fs'); const {chromium}=require('playwright-core'); fs.appendFileSync(process.env.GITHUB_ENV, 'PURSR_BROWSER_PATH='+chromium.executablePath()+'\n');"
       - run: npm test
 
   smoke:
@@ -25,8 +29,10 @@ jobs:
         with:
           node-version: 20
       - run: npm ci
-      - name: Install Playwright system Chrome
-        run: npx playwright install --with-deps chromium
+      - name: Install Chromium
+        run: |
+          npx playwright-core install --with-deps chromium
+          node -e "const fs=require('node:fs'); const {chromium}=require('playwright-core'); fs.appendFileSync(process.env.GITHUB_ENV, 'PURSR_BROWSER_PATH='+chromium.executablePath()+'\n');"
       - name: Start a tiny static server
         run: |
           mkdir -p /tmp/site
